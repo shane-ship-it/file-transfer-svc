@@ -275,8 +275,12 @@ async def upload_file(
             metadata = provider.get_metadata(blob_name)
             
             # Construct blob URL
-            base_url = provider.container_url.split('?')[0]  # Remove SAS token from URL
-            blob_url = f"{base_url}/{blob_name}"
+            if provider.container_url:
+                base_url = provider.container_url.split('?')[0]  # Remove SAS token from URL
+                blob_url = f"{base_url}/{blob_name}"
+            else:
+                # Fallback URL construction if container_url is not available
+                blob_url = f"https://account.blob.core.windows.net/{blob_name}"
             
             return UploadResponse(
                 status="success",

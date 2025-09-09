@@ -86,6 +86,8 @@ Note: The requirements.txt file is auto-generated from Poetry dependencies for c
 
 ## Usage
 
+The service provides both CLI and REST API interfaces:
+
 ### Command Line Interface
 
 The CLI automatically loads Azure credentials from `.env` file if present, so you don't need to provide `--url` and `--token` in every command.
@@ -259,6 +261,76 @@ If you have:
 
 The service will use `/my/custom/path` (CLI argument wins)
 
+### REST API Interface
+
+The service also provides a REST API for integration with other systems and automation.
+
+#### Starting the API Server
+
+```bash
+# Install API dependencies
+poetry install --extras api
+
+# Start the API server
+poetry run python api_server.py
+
+# Server runs at http://localhost:8080
+# API docs at http://localhost:8080/docs
+```
+
+#### API Endpoints
+
+**Download Files (Async)**
+```bash
+# POST /api/v1/transfer/download
+curl -X POST http://localhost:8080/api/v1/transfer/download \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prefix": "reports/",
+    "max_files": 100,
+    "destination_path": "./downloads",
+    "overwrite": true
+  }'
+```
+
+**Upload File (Sync)**
+```bash
+# POST /api/v1/transfer/upload
+curl -X POST http://localhost:8080/api/v1/transfer/upload \
+  -F "file=@/path/to/file.txt" \
+  -F "destination_path=uploads/myfile.txt" \
+  -F "date_folder=true"
+```
+
+**Check Job Status**
+```bash
+# GET /api/v1/transfer/{job_id}
+curl http://localhost:8080/api/v1/transfer/job_20240908_123456
+```
+
+**Health Check**
+```bash
+# GET /health
+curl http://localhost:8080/health
+```
+
+#### API Features
+
+- **Async Downloads** - Download jobs run in background, check status via job ID
+- **Sync Uploads** - File uploads return immediate results
+- **OpenAPI Documentation** - Interactive docs at `/docs` endpoint
+- **Optional Authentication** - API key support via `X-API-Key` header
+- **Environment Integration** - Uses same `.env` configuration as CLI
+
+See `api_examples.md` for more detailed API usage examples.
+
+#### Testing the API
+
+```bash
+# Run API tests
+poetry run python test_api.py
+```
+
 ## Configuration Reference
 
 ### Environment Variables
@@ -273,6 +345,8 @@ The service will use `/my/custom/path` (CLI argument wins)
 | `BATCH_SIZE` | Number of files per batch | 10 |
 | `RETRY_ATTEMPTS` | Number of retry attempts | 3 |
 | `CONCURRENT_DOWNLOADS` | Number of parallel downloads | 5 |
+| `PORT` | API server port | 8080 |
+| `API_KEY` | Optional API key for authentication | None |
 
 ## Development
 

@@ -34,6 +34,7 @@ class AzureBlobProvider(StorageProvider):
         # Check if we have a full container URL with SAS
         if config.get('container_url'):
             # Use container URL directly
+            self._container_url = config['container_url']
             self.container_client = ContainerClient.from_container_url(
                 config['container_url']
             )
@@ -73,6 +74,21 @@ class AzureBlobProvider(StorageProvider):
             self.container_client: ContainerClient = self.client.get_container_client(
                 self.container_name
             )
+            
+            # Store container URL for API usage
+            if config.get('account_url'):
+                account_url = config['account_url'].rstrip('/')
+                sas_token = config.get('sas_token', '')
+                if sas_token and not sas_token.startswith('?'):
+                    sas_token = '?' + sas_token
+                self._container_url = f"{account_url}/{self.container_name}{sas_token}"
+            else:
+                self._container_url = None
+    
+    @property
+    def container_url(self) -> Optional[str]:
+        """Get the container URL (may be None if not available)"""
+        return self._container_url
     
     def list_files(self, prefix: Optional[str] = None, 
                    max_results: Optional[int] = None) -> List[FileMetadata]:
