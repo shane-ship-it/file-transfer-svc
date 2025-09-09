@@ -1,0 +1,48 @@
+# Cloud Storage Transfer Service Configuration Example
+# Copy this file to config.yaml and update with your settings
+
+# Source storage configuration
+source:
+  type: azure_blob  # Options: azure_blob, gcp_storage, aws_s3 (future)
+  settings:
+    # For Azure Blob Storage
+    storage_url: "https://youraccount.blob.core.windows.net"
+    container_name: "mycontainer"
+    sas_token: "?sv=2021-06-08&ss=b&srt=sco&sp=r&se=2024-12-31T23:59:59Z&st=2024-01-01T00:00:00Z&spr=https&sig=..."
+    
+    # Or use environment variable references
+    # storage_url: "${AZURE_STORAGE_URL}"
+    # container_name: "${AZURE_CONTAINER_NAME}"
+    # sas_token: "${AZURE_SAS_TOKEN}"
+
+# Destination storage configuration
+destination:
+  type: local_fs  # Options: local_fs, gcp_storage
+  settings:
+    # For local filesystem
+    base_path: "./downloads"
+    create_dirs: true
+    use_datetime_folder: true  # Creates YYYYMMDD_HHMMSS subfolder
+    
+    # For Google Cloud Storage (optional)
+    # project_id: "my-project"
+    # bucket_name: "my-bucket"
+    # credentials_path: "/path/to/service-account.json"
+
+# Transfer settings
+transfer:
+  batch_size: 10              # Number of files to process in each batch
+  retry_attempts: 3           # Number of retry attempts for failed transfers
+  retry_delay: 5              # Delay in seconds between retries
+  concurrent_downloads: 5     # Number of parallel downloads
+  overwrite_existing: false   # Whether to overwrite existing files
+
+# API settings (for Cloud Run deployment)
+api:
+  port: 8080                  # Port for API server
+  api_key: null               # Optional API key for authentication
+
+# Logging configuration (optional)
+logging:
+  level: INFO                 # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
